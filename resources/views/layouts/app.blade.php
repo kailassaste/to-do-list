@@ -33,7 +33,11 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
-
+                        <!-- @if (Auth::check())  {{-- Check if user is logged in --}}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('task.index') }}">My Tasks</a>
+                                </li>
+                            @endif -->
                     </ul>
 
                     <!-- Right Side Of Navbar -->
