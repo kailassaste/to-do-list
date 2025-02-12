@@ -16,6 +16,12 @@ Route::get('register', [AuthController::class, 'showRegistrationForm'])->name('r
 
 Route::post('/register', [AuthController::class, 'store'])->name('register.store');
 
+Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
+
+Route::post('login', [AuthController::class, 'login'])->name('login.store');
+
+Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+
 Route::post('/task/store', [TaskController::class, 'store'])->name('task.store');
 
 Route::get('/tasks', [TaskController::class, 'index'])->name('task.index');

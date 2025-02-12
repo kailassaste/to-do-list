@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+
+
 <div class="container">
+<a href="{{ route('task.index') }}" class="btn btn-primary mt-3">My Tasks</a>
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
@@ -15,6 +18,7 @@
                     @endif
 
                     {{ __('You are logged in!') }}
+
                 </div>
             </div>
         </div>

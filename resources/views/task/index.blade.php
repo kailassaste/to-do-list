@@ -112,6 +112,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
      $(document).ready(function() 
@@ -131,7 +132,6 @@
                 dataType: 'json',
                 success: function(response) 
                 {
-                    //console.log(response);
                         var taskTableBody = $('#taskTableBody');
                         taskTableBody.empty();
 
@@ -156,12 +156,12 @@
                             taskTableBody.append(row);
                         });
                     } else {
-                        alert("No tasks found.");
+                        Swal.fire("No tasks found.");
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Error: ", xhr.responseText);
-                    alert("Something went wrong. Please try again.");
+                    Swal.fire("Something went wrong. Please try again.");
                 }
             });
         }
@@ -183,11 +183,13 @@
                 $('#addTaskModal').modal('hide');
                 $('#addTaskForm')[0].reset();
                 loadTasks();
-                alert("Task added successfully!");
+                Swal.fire("Task added successfully!");
+                window.location.reload();
             },
             error: function(response) 
             {
-                alert("Something went wrong. Please try again.");
+                Swal.fire("Something went wrong. Please try again.");
+                window.location.reload();
             }
         });
     });
@@ -227,40 +229,46 @@
             {
                 $('#editTaskModal').modal('hide');
                 loadTasks();
-                alert("Task updated successfully!");
+                Swal.fire("Task updated successfully!");
+                window.location.reload();
             },
             error: function(xhr, status, error) 
             {
                 console.error("AJAX Error:", status, error, xhr.responseText);
-                alert("An error occurred while updating the task. Please check the console for details.");
+                Swal.fire("An error occurred while updating the task. Please check the console for details.");
+                window.location.reload();
             }
         });
     });
 
+    function deleteTask(taskId) 
+    {
+        if (confirm('Are you sure you want to delete this task?')) 
+        {
+            $.ajax({
+                url: `/task/${taskId}`,
+                method: 'DELETE',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) 
+                {
+                    loadTasks();
+                    Swal.fire('Task deleted successfully');
+                    window.location.reload();
+                },
+                error: function() 
+                {
+                    Swal.fire("Something went wrong. Please try again.");
+                    window.location.reload();
+                }
+            });
+        }
+    } 
+
 });
 
-function deleteTask(taskId) 
-{
-    if (confirm('Are you sure you want to delete this task?')) 
-    {
-        $.ajax({
-            url: `/task/${taskId}`,
-            method: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) 
-            {
-                loadTasks();
-                alert('Task deleted successfully');
-            },
-            error: function() 
-            {
-                alert("Something went wrong. Please try again.");
-            }
-        });
-    }
-}    
+   
 </script>
 
 @endsection

@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\MstStatus;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        $tasks = Task::with('status')->get(); 
+        $tasks = Task::with('status')->where('createdBy',auth()->user()->id)->get(); 
         $mst_status = MstStatus::all(); 
 
         if ($request->ajax()) {
-            return response()->json(['tasks' => $tasks]);
+            return response()->json(['tasks' => $tasks])->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
         }
 
         return view('task.index', compact('tasks', 'mst_status'));
@@ -29,7 +32,9 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make(
+        $request->all(), 
+        [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'startDate' => 'required|date',
@@ -37,18 +42,25 @@ class TaskController extends Controller
             'status_id' => 'required|exists:mst_status,id',
         ]);
 
-        try {
-            $task = Task::create($request->all());
-    
-            if ($request->ajax()) 
+        if($validator->passes()){
+            try {
+                $task = Task::create($request->all());
+
+                $task->createdBy = auth()->id();
+
+                $task->save();
+        
+                if ($request->ajax()) 
+                {
+                    return response()->json(['success'=>'Added new records.', 'task' => $task]);
+                }
+                return redirect()->route('task.index');
+            } catch (\Exception $e) 
             {
-                return response()->json($task);
+                return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
             }
-            return redirect()->route('task.index');
-        } catch (\Exception $e) 
-        {
-            return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
+        return response()->json(['error' => $validator->errors()->all()]); 
     }
 
     public function edit($id)
@@ -63,22 +75,32 @@ class TaskController extends Controller
     {
         $task = Task::findOrFail($id);
 
-        $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'startDate' => 'required|date',
-            'dueDate' => 'required|date',
-            'status_id' => 'required|exists:mst_status,id'
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'startDate' => 'required|date',
+                'dueDate' => 'required|date',
+                'status_id' => 'required|exists:mst_status,id',
+            ]
+        );
 
-        $task->update($request->all());
-
-        if ($request->ajax()) 
-        {
-            return response()->json($task);
+        if($validator->passes()){
+            try {
+                $task->update($request->all());
+        
+                if ($request->ajax()) 
+                {
+                    return response()->json(['success'=>'Task updated successfully!', 'task' => $task]);
+                }
+                return redirect()->route('task.index');
+            } catch (\Exception $e) 
+            {
+                return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
+            }
         }
-
-        return redirect()->route('task.index');
+        return response()->json(['error' => $validator->errors()->all()]);
     }
 
     public function destroy($id)
