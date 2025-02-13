@@ -35,19 +35,19 @@
                     @csrf
                     <div class="form-group">
                         <label for="title">Title</label>
-                        <input type="text" class="form-control" name="title" id="title" required>
+                        <input type="text" class="form-control" name="title" id="title">
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <textarea class="form-control" name="description" id="description" required></textarea>
+                        <textarea class="form-control" name="description" id="description"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="startDate">Start Date</label>
-                        <input type="date" class="form-control" name="startDate" id="startDate" required>
+                        <input type="date" class="form-control" name="startDate" id="startDate">
                     </div>
                     <div class="form-group">
                         <label for="dueDate">Due Date</label>
-                        <input type="date" class="form-control" name="dueDate" id="dueDate" required>
+                        <input type="date" class="form-control" name="dueDate" id="dueDate">
                     </div>
                     <div class="form-group">
                         <label for="status_id">Status</label>
@@ -81,19 +81,19 @@
                     <input type="hidden" id="editTaskId">
                     <div class="form-group">
                         <label for="editTitle">Title</label>
-                        <input type="text" class="form-control" name="title" id="editTitle" required>
+                        <input type="text" class="form-control" name="title" id="editTitle">
                     </div>
                     <div class="form-group">
                         <label for="editDescription">Description</label>
-                        <textarea class="form-control" name="description" id="editDescription" required></textarea>
+                        <textarea class="form-control" name="description" id="editDescription"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="editStartDate">Start Date</label>
-                        <input type="date" class="form-control" name="startDate" id="editStartDate" required>
+                        <input type="date" class="form-control" name="startDate" id="editStartDate">
                     </div>
                     <div class="form-group">
                         <label for="editDueDate">Due Date</label>
-                        <input type="date" class="form-control" name="dueDate" id="editDueDate" required>
+                        <input type="date" class="form-control" name="dueDate" id="editDueDate">
                     </div>
                     <div class="form-group">
                         <label for="editStatusId">Status</label>
@@ -180,19 +180,44 @@
             dataType: 'json',
             success: function(response) 
             {
-                $('#addTaskModal').modal('hide');
-                $('#addTaskForm')[0].reset();
-                loadTasks();
-                Swal.fire("Task added successfully!");
-                window.location.reload();
-            },
-            error: function(response) 
-            {
-                Swal.fire("Something went wrong. Please try again.");
-                window.location.reload();
-            }
+                if (response.status == 'success') {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Task Added Successfully!',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+
+                        $('#addTaskForm')[0].reset();  
+                        $('#addTaskModal').modal('hide');  
+                        loadTasks();
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) 
+                    { 
+                        let errors = xhr.responseJSON.errors;
+                        let errorMessages = '';
+
+                        $.each(errors, function(key, value) {
+                            errorMessages += `<p>${value[0]}</p>`; 
+                        });
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Error',
+                            html: errorMessages,
+                        });
+                    }  else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'Something went wrong in adding new task!',
+                            });
+                        }
+                }
+            });
         });
-    });
 
     //edit modal
     $('#taskTableBody').on('click', '.edit-button', function() 
@@ -227,16 +252,45 @@
             dataType: 'json',
             success: function(response) 
             {
-                $('#editTaskModal').modal('hide');
-                loadTasks();
-                Swal.fire("Task updated successfully!");
-                window.location.reload();
+                if (response.status == 'success') { 
+                    $('#editTaskModal').modal('hide');
+                    loadTasks();
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Task Updated Successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                     $('#editTaskForm')[0].reset(); 
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong in updating the task!',
+                    });
+                }
             },
-            error: function(xhr, status, error) 
-            {
-                console.error("AJAX Error:", status, error, xhr.responseText);
-                Swal.fire("An error occurred while updating the task. Please check the console for details.");
-                window.location.reload();
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    let errors = xhr.responseJSON.errors;
+                    let errorMessages = '';
+
+                    $.each(errors, function(key, value) {
+                        errorMessages += `<p>${value[0]}</p>`;
+                    });
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        html: errorMessages,
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong in updating the task!',
+                    });
+                }
             }
         });
     });

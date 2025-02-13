@@ -40,7 +40,20 @@ class TaskController extends Controller
             'startDate' => 'required|date',
             'dueDate' => 'required|date',
             'status_id' => 'required|exists:mst_status,id',
+        ],
+        [
+            'title.required' => 'Title field is required',
+            'description.required' => 'Description field is required',
+            'startDate.required' => 'StartDate field is required',
+            'dueDate.required' => 'DueDate field is required',
+            'status_id.exists' => 'The selected status is invalid.',
+
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'errors' => $validator->errors()->toArray()], 422);
+
+        }
 
         if($validator->passes()){
             try {
@@ -85,6 +98,11 @@ class TaskController extends Controller
                 'status_id' => 'required|exists:mst_status,id',
             ]
         );
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'errors' => $validator->errors()->toArray()], 422);
+
+        }
 
         if($validator->passes()){
             try {

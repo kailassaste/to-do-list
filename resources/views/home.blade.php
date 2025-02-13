@@ -1,10 +1,11 @@
 @extends('layouts.app')
+@include('task.navbar')
 
 @section('content')
 
-
 <div class="container">
-<a href="{{ route('task.index') }}" class="btn btn-primary mt-3">My Tasks</a>
+
+<!-- <a href="{{ route('task.index') }}" class="btn btn-primary mt-3">My Tasks</a> -->
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
